@@ -2,12 +2,17 @@ import { ThemeProvider } from "@emotion/react";
 import { Container, createTheme, CssBaseline } from "@mui/material";
 import { useState } from "react";
 import { Route, Switch } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import Catalog from "../../features/catalog/Catalog";
 import ProductDetails from "../../features/catalog/ProductDetails";
 import AboutPage from "../about/AboutPage";
 import ContactPage from "../contact/ContactPage";
 import HomePage from "../home/HomePage";
 import NavHeader from "./NavHeader";
+
+import 'react-toastify/dist/ReactToastify.css';
+import ServerError from "../error/ServerError";
+import NotFound from "../error/NotFound";
 
 const App = () => {
   const [darkMode, setDarkMode] = useState(true);
@@ -27,6 +32,7 @@ const App = () => {
 
   return (
     <ThemeProvider theme={theme}>
+      <ToastContainer position="bottom-right" hideProgressBar theme="colored" />
       <CssBaseline />
       <NavHeader darkMode={darkMode} changeTheme={changeThemeHandler} />
       <Container>
@@ -36,6 +42,8 @@ const App = () => {
           <Route exact path="/catalog/:id" component={ProductDetails} />
           <Route exact path="/about" component={AboutPage} />
           <Route exact path="/contact" component={ContactPage} />
+          <Route exact path="/server-error" component={ServerError} />
+          <Route component={NotFound} />
         </Switch>
       </Container>
     </ThemeProvider>
