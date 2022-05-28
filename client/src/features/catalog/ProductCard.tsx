@@ -1,3 +1,4 @@
+import { LoadingButton } from "@mui/lab";
 import {
   Avatar,
   Button,
@@ -6,12 +7,12 @@ import {
   CardContent,
   CardHeader,
   CardMedia,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import agent from "../../app/api/agent";
+import { useStoreContext } from "../../app/context/StoreContext";
 
 import { Product } from "../../app/models/Product";
 
@@ -20,6 +21,19 @@ interface Props {
 }
 
 const ProductCard = ({ product }: Props) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { setBasket } = useStoreContext();
+
+  const handleAddItem = (productId: number) => {
+    setIsLoading(true);
+    agent.Basket.addItem(productId)
+      .then((basket) => {
+        setBasket(basket.value);
+      })
+      .catch((error) => console.log(error))
+      .finally(() => setIsLoading(false));
+  };
+
   return (
     <Card>
       <CardHeader
@@ -36,7 +50,11 @@ const ProductCard = ({ product }: Props) => {
       <CardMedia
         image={product.pictureUrl}
         title={product.name}
-        sx={{ height: 140, backgroundSize: "contain", bgcolor: 'primary.light' }}
+        sx={{
+          height: 140,
+          backgroundSize: "contain",
+          bgcolor: "primary.light",
+        }}
       />
       <CardContent>
         <Typography gutterBottom variant="h5" color="secondary">
@@ -47,8 +65,16 @@ const ProductCard = ({ product }: Props) => {
         </Typography>
       </CardContent>
       <CardActions>
-        <Button size="small">Add to Cart</Button>
-        <Button component={Link} to={`/catalog/${product.id}`} size="small">View</Button>
+        <LoadingButton
+          loading={isLoading}
+          onClick={() => handleAddItem(product.id)}
+          size="small"
+        >
+          Add to Cart
+        </LoadingButton>
+        <Button component={Link} to={`/catalog/${product.id}`} size="small">
+          View
+        </Button>
       </CardActions>
     </Card>
   );

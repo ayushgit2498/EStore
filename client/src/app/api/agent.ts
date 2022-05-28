@@ -2,44 +2,50 @@ import axios, { AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { history } from "../../index";
 
-const sleep = () => new Promise(resolve => setTimeout(resolve, 500));
+const sleep = () => new Promise((resolve) => setTimeout(resolve, 500));
 
 axios.defaults.baseURL = "http://localhost:5000/api/";
+axios.defaults.withCredentials = true; // sets cookies for each request
 
-axios.interceptors.response.use(async (response) => {
+axios.interceptors.response.use(
+  async (response) => {
     await sleep();
-  return response;
-}, (error : any) => {
+    return response;
+  },
+  (error: any) => {
     // console.log("error intercepted");
+    console.log(error);
+    
     const { data, status } = error.response; // ! turns off type safety
     switch (status) {
-        case 400:
-            if (data.errors) {
-                const modelStateErrors: string[] = [];
-                for (const key in data.errors) {
-                    if (data.errors[key]) {
-                        modelStateErrors.push(data.errors[key])
-                    }
-                }
-                throw modelStateErrors.flat();
+      case 400:
+        if (data.errors) {
+          const modelStateErrors: string[] = [];
+          for (const key in data.errors) {
+            if (data.errors[key]) {
+              modelStateErrors.push(data.errors[key]);
             }
-            toast.error(data.title);
-            break;
-        case 401:
-            toast.error(data.title);
-            break;
-        case 500:
-            history.push({
-                pathname: '/server-error',
-                state: {error: data}
-            });
-            break;
-        default:
-            break;
+          }
+          throw modelStateErrors.flat();
+        }
+        toast.error(data.title);
+        break;
+      case 401:
+        toast.error(data.title);
+        break;
+      case 500:
+        history.push({
+          pathname: "/server-error",
+          state: { error: data },
+        });
+        break;
+      default:
+        break;
     }
-    
+
     return Promise.reject(error.response);
-});
+  }
+);
 
 const responseBody = (respone: AxiosResponse) => respone.data;
 
@@ -55,6 +61,14 @@ const Catalog = {
   details: (id: number) => requests.get(`products/${id}`),
 };
 
+const Basket = {
+  get: () => requests.get("basket"),
+  addItem: (productId: number, quantity = 1) =>
+    requests.post(`basket?productId=${productId}&quantity=${quantity}`, {}),
+  removeItem: (productId: number, quantity = 1) =>
+    requests.delete(`basket?productId=${productId}&quantity=${quantity}`),
+};
+
 const TestErrors = {
   get400Error: () => requests.get("buggy/bad-request"),
   get401Error: () => requests.get("buggy/unauthorised"),
@@ -66,6 +80,7 @@ const TestErrors = {
 const agent = {
   Catalog,
   TestErrors,
+  Basket,
 };
 
 export default agent;
