@@ -12,10 +12,11 @@ import {
 } from "@mui/material";
 import { Link, NavLink } from "react-router-dom";
 import { useStoreContext } from "../context/StoreContext";
+import { useAppSelector } from "../store/configureStore";
 
 const NavHeader = (props: any) => {
   
-  const { basket } = useStoreContext();
+  const { basket } = useAppSelector(state => state.basket);
   
   const midLinks = [
     { title: "CATALOG", path: "/catalog" },

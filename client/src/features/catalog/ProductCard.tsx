@@ -9,30 +9,31 @@ import {
   CardMedia,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import agent from "../../app/api/agent";
-import { useStoreContext } from "../../app/context/StoreContext";
 
 import { Product } from "../../app/models/Product";
+import { addBasketItemAsync } from "../../app/store/basketSlice";
+import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
 
 interface Props {
   product: Product;
 }
 
 const ProductCard = ({ product }: Props) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { setBasket } = useStoreContext();
+  //const [isLoading, setIsLoading] = useState(false);
+  // const { setBasket } = useStoreContext();
+  const { status } = useAppSelector((state) => state.basket);
+  const dispatch = useAppDispatch();
 
-  const handleAddItem = (productId: number) => {
-    setIsLoading(true);
-    agent.Basket.addItem(productId)
-      .then((basket) => {
-        setBasket(basket.value);
-      })
-      .catch((error) => console.log(error))
-      .finally(() => setIsLoading(false));
-  };
+  // const handleAddItem = (productId: number) => {
+  //   setIsLoading(true);
+  //   agent.Basket.addItem(productId)
+  //     .then((basket) => {
+  //       dispatch(setBasket(basket.value));
+  //     })
+  //     .catch((error) => console.log(error))
+  //     .finally(() => setIsLoading(false));
+  // };
 
   return (
     <Card>
@@ -66,8 +67,12 @@ const ProductCard = ({ product }: Props) => {
       </CardContent>
       <CardActions>
         <LoadingButton
-          loading={isLoading}
-          onClick={() => handleAddItem(product.id)}
+          // We do this because now all product card components
+          // are sharing the central state status and not their individual loading state as before
+          loading={status.includes(`pendingAddItem${product.id}`)}
+          onClick={() =>
+            dispatch(addBasketItemAsync({ productId: product.id }))
+          }
           size="small"
         >
           Add to Cart

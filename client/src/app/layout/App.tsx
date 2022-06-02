@@ -3,7 +3,6 @@ import {
   Container,
   createTheme,
   CssBaseline,
-  useStepContext,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Route, Switch } from "react-router-dom";
@@ -19,15 +18,17 @@ import "react-toastify/dist/ReactToastify.css";
 import ServerError from "../error/ServerError";
 import NotFound from "../error/NotFound";
 import BasketPage from "../../features/basket/BasketPage";
-import { useStoreContext } from "../context/StoreContext";
 import { getCookie } from "../util/util";
 import agent from "../api/agent";
 import LoadingComponent from "./LoadingComponent";
 import CheckoutPage from "../../features/checkout/CheckoutPage";
+import { useAppDispatch } from "../store/configureStore";
+import { setBasket } from "../store/basketSlice";
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { setBasket } = useStoreContext();
+  //const { setBasket } = useStoreContext();
+  const dispatch = useAppDispatch();
 
   const [darkMode, setDarkMode] = useState(true);
   const paletteType = darkMode ? "dark" : "light";
@@ -44,13 +45,13 @@ const App = () => {
     const buyerID = getCookie("buyerId");
     if (buyerID) {
       agent.Basket.get()
-        .then((basket) => setBasket(basket))
+        .then((basket) => dispatch(setBasket(basket)))
         .catch((error) => console.log(error))
         .finally(() => setIsLoading(false));
     } else {
       setIsLoading(false);
     }
-  }, [setBasket]);
+  }, [dispatch]);
 
   if (isLoading) {
     return (
