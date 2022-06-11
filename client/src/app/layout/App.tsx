@@ -1,10 +1,6 @@
 import { ThemeProvider } from "@emotion/react";
-import {
-  Container,
-  createTheme,
-  CssBaseline,
-} from "@mui/material";
-import { useEffect, useState } from "react";
+import { Container, createTheme, CssBaseline } from "@mui/material";
+import { useCallback, useEffect, useState } from "react";
 import { Route, Switch } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import Catalog from "../../features/catalog/Catalog";
@@ -18,16 +14,17 @@ import "react-toastify/dist/ReactToastify.css";
 import ServerError from "../error/ServerError";
 import NotFound from "../error/NotFound";
 import BasketPage from "../../features/basket/BasketPage";
-import { getCookie } from "../util/util";
-import agent from "../api/agent";
 import LoadingComponent from "./LoadingComponent";
 import CheckoutPage from "../../features/checkout/CheckoutPage";
 import { useAppDispatch } from "../store/configureStore";
-import { setBasket } from "../store/basketSlice";
+import { fetchBasketAsync } from "../store/basketSlice";
+import Login from "../../features/Account/Login";
+import Register from "../../features/Account/Register";
+import { fetchCurrentUser } from "../store/accountSlice";
+import PrivateRoute from "./PrivateRoute";
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
-  //const { setBasket } = useStoreContext();
   const dispatch = useAppDispatch();
 
   const [darkMode, setDarkMode] = useState(true);
@@ -41,17 +38,18 @@ const App = () => {
     },
   });
 
-  useEffect(() => {
-    const buyerID = getCookie("buyerId");
-    if (buyerID) {
-      agent.Basket.get()
-        .then((basket) => dispatch(setBasket(basket)))
-        .catch((error) => console.log(error))
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
+  const initApp = useCallback(async () => {
+    try {
+      await dispatch(fetchCurrentUser());
+      await dispatch(fetchBasketAsync());
+    } catch (error) {
+      console.log(error);
     }
   }, [dispatch]);
+
+  useEffect(() => {
+    initApp().then(() => setIsLoading(false));
+  }, [initApp]);
 
   if (isLoading) {
     return (
@@ -76,7 +74,9 @@ const App = () => {
           <Route exact path="/contact" component={ContactPage} />
           <Route exact path="/server-error" component={ServerError} />
           <Route exact path="/basket" component={BasketPage} />
-          <Route exact path="/checkout" component={CheckoutPage} />
+          <PrivateRoute exact path="/checkout" component={CheckoutPage} />
+          <Route exact path="/login" component={Login} />
+          <Route exact path="/register" component={Register} />
           <Route component={NotFound} />
         </Switch>
       </Container>

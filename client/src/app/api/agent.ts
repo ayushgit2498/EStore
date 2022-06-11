@@ -1,20 +1,37 @@
 import axios, { AxiosResponse } from "axios";
 import { toast } from "react-toastify";
+import { json } from "stream/consumers";
 import { history } from "../../index";
 import { PaginatedResponse } from "../models/Pagination";
+import { User } from "../models/User";
+//import store from "../store/configureStore";
 
 const sleep = () => new Promise((resolve) => setTimeout(resolve, 500));
 
 axios.defaults.baseURL = "http://localhost:5000/api/";
 axios.defaults.withCredentials = true; // sets cookies for each request
 
+axios.interceptors.request.use((config) => {
+  //const token = store.getState().account.user?.token;
+  const userFromLocalStorage = localStorage.getItem("user");
+
+  if (userFromLocalStorage) {
+    const user: User = JSON.parse(userFromLocalStorage);
+    config.headers!.Authorization = `Bearer ${user.token}`;
+  }
+  return config;
+});
+
 axios.interceptors.response.use(
   async (response) => {
     await sleep();
-    const pagination = response.headers['pagination'];
+    const pagination = response.headers["pagination"];
     console.log(response);
     if (pagination) {
-      response.data = new PaginatedResponse(response.data, JSON.parse(pagination));
+      response.data = new PaginatedResponse(
+        response.data,
+        JSON.parse(pagination)
+      );
       return response;
     }
     return response;
@@ -22,7 +39,7 @@ axios.interceptors.response.use(
   (error: any) => {
     // console.log("error intercepted");
     console.log(error);
-    
+
     const { data, status } = error.response; // ! turns off type safety
     switch (status) {
       case 400:
@@ -57,7 +74,8 @@ axios.interceptors.response.use(
 const responseBody = (respone: AxiosResponse) => respone.data;
 
 const requests = {
-  get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(responseBody),
+  get: (url: string, params?: URLSearchParams) =>
+    axios.get(url, { params }).then(responseBody),
   post: (url: string, body: {}) => axios.post(url, body).then(responseBody),
   put: (url: string, body: {}) => axios.put(url, body).then(responseBody),
   delete: (url: string) => axios.delete(url).then(responseBody),
@@ -66,7 +84,7 @@ const requests = {
 const Catalog = {
   list: (params: URLSearchParams) => requests.get("products", params),
   details: (id: number) => requests.get(`products/${id}`),
-  fetchFilters: () => requests.get('products/filters')
+  fetchFilters: () => requests.get("products/filters"),
 };
 
 const Basket = {
@@ -75,6 +93,12 @@ const Basket = {
     requests.post(`basket?productId=${productId}&quantity=${quantity}`, {}),
   removeItem: (productId: number, quantity = 1) =>
     requests.delete(`basket?productId=${productId}&quantity=${quantity}`),
+};
+
+const Account = {
+  login: (values: any) => requests.post("account/login", values),
+  register: (values: any) => requests.post("account/register", values),
+  currentUser: () => requests.get("account/currentUser"),
 };
 
 const TestErrors = {
@@ -89,6 +113,7 @@ const agent = {
   Catalog,
   TestErrors,
   Basket,
+  Account,
 };
 
 export default agent;

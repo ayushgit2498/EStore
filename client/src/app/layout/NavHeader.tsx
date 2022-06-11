@@ -13,11 +13,12 @@ import {
 import { Link, NavLink } from "react-router-dom";
 import { useStoreContext } from "../context/StoreContext";
 import { useAppSelector } from "../store/configureStore";
+import SignedInMenu from "./SignedInMenu";
 
 const NavHeader = (props: any) => {
-  
-  const { basket } = useAppSelector(state => state.basket);
-  
+  const { user } = useAppSelector((state) => state.account);
+  const { basket } = useAppSelector((state) => state.basket);
+
   const midLinks = [
     { title: "CATALOG", path: "/catalog" },
     { title: "ABOUT", path: "/about" },
@@ -86,13 +87,22 @@ const NavHeader = (props: any) => {
               <ShoppingCart />
             </Badge>
           </IconButton>
-          <List sx={{ display: "flex" }}>
-            {rightLinks.map(({ title, path }) => (
-              <ListItem component={NavLink} to={path} key={path} sx={navStyles}>
-                {title}
-              </ListItem>
-            ))}
-          </List>
+          {user ? (
+            <SignedInMenu />
+          ) : (
+            <List sx={{ display: "flex" }}>
+              {rightLinks.map(({ title, path }) => (
+                <ListItem
+                  component={NavLink}
+                  to={path}
+                  key={path}
+                  sx={navStyles}
+                >
+                  {title}
+                </ListItem>
+              ))}
+            </List>
+          )}
         </Box>
       </Toolbar>
     </AppBar>

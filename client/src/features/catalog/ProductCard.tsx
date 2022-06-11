@@ -20,20 +20,8 @@ interface Props {
 }
 
 const ProductCard = ({ product }: Props) => {
-  //const [isLoading, setIsLoading] = useState(false);
-  // const { setBasket } = useStoreContext();
   const { status } = useAppSelector((state) => state.basket);
   const dispatch = useAppDispatch();
-
-  // const handleAddItem = (productId: number) => {
-  //   setIsLoading(true);
-  //   agent.Basket.addItem(productId)
-  //     .then((basket) => {
-  //       dispatch(setBasket(basket.value));
-  //     })
-  //     .catch((error) => console.log(error))
-  //     .finally(() => setIsLoading(false));
-  // };
 
   return (
     <Card>
@@ -69,7 +57,7 @@ const ProductCard = ({ product }: Props) => {
         <LoadingButton
           // We do this because now all product card components
           // are sharing the central state status and not their individual loading state as before
-          loading={status.includes(`pendingAddItem${product.id}`)}
+          loading={status === `pendingAddItem${product.id}`}
           onClick={() =>
             dispatch(addBasketItemAsync({ productId: product.id }))
           }
