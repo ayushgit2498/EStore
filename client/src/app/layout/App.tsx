@@ -22,6 +22,7 @@ import Login from "../../features/Account/Login";
 import Register from "../../features/Account/Register";
 import { fetchCurrentUser } from "../store/accountSlice";
 import PrivateRoute from "./PrivateRoute";
+import Orders from "../../features/orders/Orders";
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +76,7 @@ const App = () => {
           <Route exact path="/server-error" component={ServerError} />
           <Route exact path="/basket" component={BasketPage} />
           <PrivateRoute exact path="/checkout" component={CheckoutPage} />
+          <PrivateRoute exact path="/orders" component={Orders} />
           <Route exact path="/login" component={Login} />
           <Route exact path="/register" component={Register} />
           <Route component={NotFound} />

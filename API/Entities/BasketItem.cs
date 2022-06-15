@@ -9,7 +9,7 @@ namespace API.Entities
         public int Quantity { get; set; }
 
         // navigation properties.
-        // When we specify foreign keys here it means this child cannot exist withour parent.
+        // When we specify foreign keys here it means this child cannot exist without parent.
         public int ProductId { get; set; }
         public Product Product { get; set; }
 
