@@ -8,7 +8,7 @@ import { User } from "../models/User";
 
 const sleep = () => new Promise((resolve) => setTimeout(resolve, 500));
 
-axios.defaults.baseURL = "http://localhost:5000/api/";
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
 axios.defaults.withCredentials = true; // sets cookies for each request
 
 axios.interceptors.request.use((config) => {
@@ -24,7 +24,7 @@ axios.interceptors.request.use((config) => {
 
 axios.interceptors.response.use(
   async (response) => {
-    await sleep();
+    if (process.env.NODE_ENV === "development") await sleep();
     const pagination = response.headers["pagination"];
     console.log(response);
     if (pagination) {
